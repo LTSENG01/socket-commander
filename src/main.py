@@ -1,3 +1,4 @@
+import os
 import socket
 import threading
 import requests
@@ -5,6 +6,8 @@ import requests
 HOST = ''           # Accepts all connections
 PORT = 65433        # Port to listen on (non-privileged ports are > 1023)
 STOP = "STOP"       # Command to shutdown the server
+
+ifttt_key = os.environ.get("IFTTT_KEY")
 
 
 def handle_connection(conn, addr):
@@ -21,10 +24,10 @@ def handle_connection(conn, addr):
 
             if decoded == "start_vacuum":
                 print("Handling start_vacuum.")
-                requests.get("https://maker.ifttt.com/trigger/start_vacuum/with/key/bzpgfudiKkSFwcPARaQqGf")
+                requests.get(f"https://maker.ifttt.com/trigger/start_vacuum/with/key/{ifttt_key}")
             if decoded == "return_vacuum":
                 print("Handling return_vacuum.")
-                requests.get("https://maker.ifttt.com/trigger/return_vacuum/with/key/bzpgfudiKkSFwcPARaQqGf")
+                requests.get(f"https://maker.ifttt.com/trigger/return_vacuum/with/key/{ifttt_key}")
 
             if STOP in decoded:
                 # if the program receives STOP
@@ -36,6 +39,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind((HOST, PORT))
     s.listen()
+
+    if ifttt_key == "":
+        print("Error. IFTTT_KEY is not set in the environment.")
 
     print(f"Server is listening on {PORT}.")
     while True:
